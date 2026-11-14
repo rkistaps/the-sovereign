@@ -302,8 +302,8 @@ button.fslot{border-style:solid;cursor:pointer} button.fslot:hover,button.fslot:
 .lnk{background:none;border:0;padding:0;color:var(--mut);text-decoration:underline;text-underline-offset:2px;font-size:12px;text-transform:none;letter-spacing:0;font-weight:400}
 .tvempty{display:flex;align-items:center;gap:10px;color:var(--mut);font-size:13px;padding:2px}
 .tvempty svg{width:34px;height:34px;flex:none;opacity:.6;color:var(--mut)}
-.deal{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,118px),1fr));gap:8px}
-@container (min-width:620px){ .deal{grid-template-columns:repeat(auto-fit,minmax(0,210px));justify-content:center;gap:12px} }
+.deal{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@container (min-width:620px){ .deal{grid-template-columns:repeat(2,minmax(0,210px));justify-content:center;gap:12px} }
 .flip{position:relative;perspective:900px;min-width:0;display:grid}
 .deal.wait .flip{animation-play-state:paused} .flip.dealt{animation:deal .5s cubic-bezier(.2,.8,.2,1) backwards} .flip.dealt:nth-child(2){animation-delay:.1s} .flip.dealt:nth-child(3){animation-delay:.2s} .flip.dealt:nth-child(4){animation-delay:.3s}
 @keyframes deal{from{transform:translate(30px,-30px) rotate(10deg);opacity:0}}
@@ -905,7 +905,7 @@ const R = {
   aiFestLoy: 45, aiLoyCalm: 30, aiLoyFloor: 15,   // computer: festivals below 45; not at war, no land grabs below 30; raids instead of conquering when an attack would leave it under 15 (warlike: 10)
   // generals
   speedBase: 10, speedPerPoint: 2.5, genNoGeneral: 0.3, genTrainRate: 0.5, moraleRecovery: 10,
-  genCalls: 10, genRise: 1.5, genCards: 3,  // Tavern: each tier can be called 10 times a year; every extra call that year costs ×1.5; a call brings 3 candidates (tiers: the General tiers table)
+  genCalls: 10, genRise: 1.5, genCards: 4,  // Tavern: each tier can be called 10 times a year; every extra call that year costs ×1.5; a call brings 4 candidates (tiers: the General tiers table)
   genHide: 0.3, genTroopShare: 0.4,
   genMax: 10,                               // at most 10 generals at once (field, defender and staff posts together)
   // staff posts: a posted general can't attack or defend; each post gives a yearly effect, worked out at the end of the year
@@ -925,7 +925,7 @@ const R = {
   relSpoil: 0.05, relSlots: 4, relLegMul: 1.25, relRuin: 0.02, relRuinFamous: 0.2, relAcad: 0.1, relLegRare: 0.5, relTake: 10, relFamous: 6, relCovet: 0.3, // relics: chance to take one of a beaten general's relics, relics a general carries, a Legendary relic's numbers (× a rare's); ruins chance (and the share that turns up a lost famous one), hiring, morale for taking back (or swapping out) a famous one, famous ones at the start, how much computer states covet them
   rlBlade: 3, rlMap: 10, rlAstro: 25, rlShield: 0.1, rlAegis: 0.2, rlHorn: 0.06, rlCursed: 0.12, rlCursedLoy: 0.5, rlDragon: 0.08, rlDragonFloor: 60, rlSpear: 0.15, rlHammer: 0.2, rlBanner: 5, rlSaint: 1, rlLedger: 1.5, rlSeal: 1.5, rlCrown: 2, rlCrownLoy: 1,
   relSpreadC: 0.4, relSpreadR: 0.2, relSpreadU: 0.1333, // each relic rolls its numbers when it's made: × 1 ± this (common 0.6–1.4, rare and cursed 0.8–1.2, famous 0.87–1.13, so +15% rolls 13–17%)
-  merchSack: 600, merchChest: 3000, merchCoffer: 15000, merchRise: 1.6, merchCards: 3, merchLeg: 0.3333, // the relic merchant: prices of the sack, chest and coffer; × per extra one of the same that year; relics laid out; Legendary chance as a share of the rare chance (taken from common)
+  merchSack: 600, merchChest: 3000, merchCoffer: 15000, merchRise: 1.6, merchCards: 4, merchLeg: 0.3333, // the relic merchant: prices of the sack, chest and coffer; × per extra one of the same that year; relics laid out; Legendary chance as a share of the rare chance (taken from common)
   relStock: 50, smeltC: 150, smeltR: 600, smeltL: 2000, // the Treasury holds at most 50 relics (more are smelted at the end of the year, weakest first); gold for smelting a common, rare (or cursed) and Legendary relic
   forgeC: 2000, forgeR: 6000, forgeL: 15000, forgeSpread: 0.15, // the Forge: gold for 3 common → 1 rare, 3 rare of one family → 1 Legendary, 3 Legendary of one family → 1 Legendary rolled 100%; a forged relic's roll = the 3 rolls' average ± this
   rlResC: 0.05, rlResR: 0.1, rlResU: 0.15, rlSciC: 0.03, rlSciR: 0.06, rlSciU: 0.1, // Governor relics: grain, taxes, wood or iron (common, rare, famous); research points
@@ -1370,7 +1370,7 @@ function relForCand(g,tier){ if(tier!=="leg"&&!(tier==="acad"&&R01(g)<R.relAcad)
 function relSeed(g){ const n=Math.min(REL_FAMOUS.length,Math.max(0,Math.round(R.relFamous))), pool=g.countries.filter(c=>c.ai&&c.alive);
   for(let i=0;i<n&&pool.length;i++){ const c=pool.splice(Math.floor(R01(g)*pool.length),1)[0]; relicsOf(c).push(newRelic(g,REL_FAMOUS[i],"Held since the founding")); } }
 // ---------- the relic merchant: open a sack, chest or coffer, 3 relics are laid out, take one (like the Tavern; never famous) ----------
-const MERCH=[{id:"sack",name:"Peddler's sack",kick:"Peddler's wares",pk:"merchSack",c:0.92,r:0.08,x:0},{id:"chest",name:"Merchant's chest",kick:"Merchant's goods",pk:"merchChest",c:0.7,r:0.27,x:0.03},{id:"coffer",name:"Royal coffer",kick:"From a fallen court",pk:"merchCoffer",c:0.3,r:0.64,x:0.06}];
+const MERCH=[{id:"sack",name:"Peddler's sack",kick:"Peddler's wares",pk:"merchSack",c:0.96,r:0.04,x:0},{id:"chest",name:"Merchant's chest",kick:"Merchant's goods",pk:"merchChest",c:0.835,r:0.135,x:0.03},{id:"coffer",name:"Royal coffer",kick:"From a fallen court",pk:"merchCoffer",c:0.62,r:0.32,x:0.06}];
 const MERCH_BY=Object.fromEntries(MERCH.map(m=>[m.id,m]));
 function merOf(g,c){ if(!c.mer||c.mer.t!==g.turn) c.mer={t:g.turn,n:{},pend:null}; return c.mer; } // this year's openings; undecided relics leave at the end of the year
 function merPrice(g,c,id){ const m=MERCH_BY[id]; return m?Math.round((R[m.pk]||0)*Math.pow(R.merchRise,merOf(g,c).n[id]||0)/10)*10:0; }
@@ -6387,6 +6387,7 @@ const CHANGELOG=[
 ["Land bonuses in battle reports","2026-11-14 09:04",["The Land taken line in battle reports now shows every land multiplier: Breaching Spear, Hammer, Cautious generals, stance and attack mode","Relic land chips name the relic","Older battles in the news keep these details"]],
 ["Pick relics from the general card","2026-11-14 08:55",["Clicking a general's relic slot opens a list of your Treasury relics","Pick one and he carries it; you stay on the Generals list","Relics that work for him are listed first"]],
 ["A new state view","2026-11-14 08:30",["Clicking a state opens a new view: its colour, flag, alliance and how it feels about you in a badge","Three tabs: Overview (land with rank and a chart, population, army, generals, loyalty, wonders, wars), Relations (why it feels as it does about you, and all its neighbors) and Science (its ten levels against the world average)","Buttons: Show on map, Plan attack, Take over","The map tooltip no longer lists neighbor feelings; they are in the Relations tab"]],
+["Four cards to pick from","2026-11-14 19:45",["The Tavern brings 4 candidates a call instead of 3","The Merchant lays out 4 relics instead of 3","Candidates and relics on the table sit in a 2×2 grid","Merchant rare and Legendary chances halved: sack 4% rare, chest 13.5%, coffer 32%"]],
 ["Relic merchant","2026-11-14 08:23",["New Generals → Merchant (key R, before the Treasury, now T): buy relics the way you hire in the Tavern","Three offers: Peddler's sack (600 gold), Merchant's chest (3,000) and Royal coffer (15,000), each with better odds of a rare","Open one and three relics turn over; take one, the rest are packed away. A rare or cursed relic glows before it turns","Each extra one of the same offer that year costs 1.6× more; prices reset every year","Famous relics are never sold","Computer states buy relics too"]],
 ["The Forge","2026-11-14 08:08",["New Forge at the top of Generals → Treasury: melt three relics into one","3 common → 1 rare for 2,000 gold: three of one troop or resource give that family's rare, others a random rare; its roll is the three rolls' average ±15%","3 rare of one family → that rare with a perfect roll (100%) for 6,000 gold","Famous relics can't be forged","The anvil shows what you can get and the roll range before you pay; the new relic appears with a shower of sparks","Treasury tiles show a bar for each relic's roll","Computer states forge their spare relics too"]],
 ["Relics roll their numbers","2026-11-14 07:47",["Every relic rolls its numbers when it is found: common ones ±40% around the listed value (+3–7% instead of +5%), rare ±20%, famous ±13%","Two relics of the same name can now differ; the Treasury shows each one's numbers and a bar for how good its roll is","Rules & guide and the relic tables show the ranges","Relics from older saves keep the middle value"]],
